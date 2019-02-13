@@ -66,7 +66,9 @@ int main(int argc, char** argv)
 	switch(intOp){
 		case 49:
 			if(t==0){
+				std::cout<<"Inicio prueba 1 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
 				takeoff_pub_.publish(takeoff_cmd);
+				ros::Duration(3).sleep();
 				t++;
 			}else{
 				if(my < 300){

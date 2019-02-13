@@ -16,7 +16,7 @@
 
 using namespace std;
 //Variables
-int intOp;
+int intOp,t;
 uint8_t battery;
 float vx,vy,vz,vaz;
 geometry_msgs::Twist emma_cmd;
@@ -74,10 +74,18 @@ int main(int argc, char** argv)
 
   while(ros::ok()){
 	switch(intOp){
-		case 49:		
-			std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
-			c_vel(vx,vy,vz,vaz);
-			fb_pub.publish(emma_cmd);
+		case 49:
+			if(t==0){
+				std::cout<<"Inicio prueba 1 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
+				takeoff_pub_.publish(takeoff_cmd);
+				ros::Duration(6).sleep();
+				t++;
+			}
+			else{	
+				std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
+				c_vel(vx,vy,vz,0.0);
+				fb_pub.publish(emma_cmd);
+			}
 		break;
 		case 50:
 			std::cout<<"Take Off "<<"B "<<(int)battery<<" % \n";

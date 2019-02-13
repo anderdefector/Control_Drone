@@ -16,36 +16,52 @@
 
 using namespace std;
 //Variables
-int intOp, step;
+int intOp, step, rad, F=0 ;
 uint8_t battery;
-float vx,vy,vz,vaz;
+float h,x,x_des,vy,vyo,vaz,vz,u,h_des;
 geometry_msgs::Twist emma_cmd;
 
 //Funciones
 void c_vel (float lin_x, float lin_y, float lin_z, float ang_z);
 //Funciones Callback
+
+//Callback Pelota
+
+
+void altitude_callback(const bebop_msgs::Ardrone3PilotingStateAltitudeChanged::ConstPtr& msg2){
+	h=msg2->altitude;
+}
+
 void opt_callback(const std_msgs::Int32::ConstPtr& msg1){
 	intOp=msg1->data;
 }
 
-void vy_callback(const std_msgs::Float32::ConstPtr& msg2){
-	vy=msg2->data;
+void rad_callback(const std_msgs::Int32::ConstPtr& msg){
+	rad=msg->data;
 }
 
-void vx_callback(const std_msgs::Float32::ConstPtr& msg3){
-	vx=msg3->data;
+void vy_callback(const std_msgs::Float32::ConstPtr& msg){
+	vy=msg->data;
 }
 
-void vz_callback(const std_msgs::Float32::ConstPtr& msg4){
-	vz=msg4->data;
+void vhz_callback(const std_msgs::Float32::ConstPtr& msg){
+	vz=msg->data;
 }
 
-void vaz_callback(const std_msgs::Float32::ConstPtr& msg4){
-	vaz=msg4->data;
+void vaz_callback(const std_msgs::Float32::ConstPtr& msg){
+	vaz=msg->data;
+}
+
+void vyo_callback(const std_msgs::Float32::ConstPtr& msg){
+	vyo=msg->data;
 }
 
 void battery_callback(const bebop_msgs::CommonCommonStateBatteryStateChanged::ConstPtr& msg2){
 	battery=msg2->percent;
+}
+
+void odom_callback(const nav_msgs::Odometry::ConstPtr& msg){
+	x=msg->pose.pose.position.x;
 }
 
 
@@ -61,11 +77,14 @@ int main(int argc, char** argv)
   ros::Subscriber battery_ = nodo_.subscribe("/bebop/states/common/CommonState/BatteryStateChanged",1,battery_callback);
   //Nodos de velocidad
   //Control en vy utilizando odometría
-  ros::Subscriber vy_sub = nodo_.subscribe("/vely",10,vy_callback);  
-  ros::Subscriber vx_sub = nodo_.subscribe("/controlX",10,vx_callback); 
-  ros::Subscriber vz_sub = nodo_.subscribe("/controlZ",10,vz_callback); 
+  ros::Subscriber vy_sub = nodo_.subscribe("/vely",10,vy_callback); 
+  ros::Subscriber vhz_sub = nodo_.subscribe("/velz",10,vhz_callback); 
+  //ros::Subscriber vx_sub = nodo_.subscribe("/controlX",10,vx_callback); 
+  //ros::Subscriber vz_sub = nodo_.subscribe("/controlZ",10,vz_callback); 
   ros::Subscriber vaz_sub = nodo_.subscribe("/controlAZ",10,vaz_callback);
-  //ros::Subscriber My_sub = nodo_.subscribe("/MY",1,My_callback);								
+  ros::Subscriber odom = nodo_.subscribe("/bebop/odom",1,odom_callback);
+  //ros::Subscriber My_sub = nodo_.subscribe("/MY",1,My_callback);	}
+   ros::Subscriber Mx_sub = nodo_.subscribe("/Radio",1,rad_callback);							
   	
   std_msgs::Empty takeoff_cmd;
   std_msgs::Empty land_cmd;	
@@ -75,26 +94,33 @@ int main(int argc, char** argv)
   while(ros::ok()){
 	switch(intOp){
 		case 49:
+			
 			switch(F){
 				case 1:
-					if(u != 0){
-						std::cout<<"Prueba 2 "<<"B = "<<" % "<<"Avanzando F = "<< F << " " << vy << endl;
+					if(rad < 75){
+						std::cout<<"Prueba 5 "<<"B = "<<" % "<<"Avanzando F = "<< F << " " << vy << endl;
 						c_vel(0.05,vyo,0,vaz);
 						fb_pub.publish(emma_cmd);
+						h_des = h;
 						F=1;
 					}else{
-						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<"Hover F = "<< F << endl;
+						std::cout<<"Prueba 5 "<<"B = "<<(int)battery<<" % "<<"Hover F = "<< F << endl;
 						c_vel(0,0,0,0);
 						fb_pub.publish(emma_cmd);
+						ros::Duration(2).sleep();
+						h_des = h_des + 0.6;
 						F=2;
 					}
 				break;
 		
 				case 2:
-					std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Subiendo :) F = " << F << endl;
+					std::cout<<"Prueba 5 "<<"B = "<<(int)battery<<" % "<<" Subiendo :) F = " << F << endl;
 					c_vel(0,vyo,0.2,0);
 					fb_pub.publish(emma_cmd);
-					if(h > 1.50){ 
+					if(h > h_des){ 
+						c_vel(0,0,0,0);
+						fb_pub.publish(emma_cmd);
+						ros::Duration(1).sleep();
 						F=3; x_des = x_des + 0.75;
 					}
 					else { 
@@ -103,28 +129,73 @@ int main(int argc, char** argv)
 				break;
 		
 				case 3:
-					std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
+					std::cout<<"Prueba 5 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
 					c_vel(0.05,vyo,0,vaz);
 					fb_pub.publish(emma_cmd);
 					if( x > x_des){ 
+						c_vel(0,0,0,0);
+						fb_pub.publish(emma_cmd);
+						ros::Duration(1).sleep();
+						h_des = h_des + 0.6;
 						F=4; 
 					}
-					else { 
+					else{ 
+						h_des = h;
 						F=3; 
 					}
 				break;
 
 				case 4:
-					std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
+					std::cout<<"Prueba 5 "<<"B = "<<(int)battery<<" % "<<" Subiendo :) F = " << F << endl;
+					c_vel(0,vyo,0.2,0);
+					fb_pub.publish(emma_cmd);
+					if(h > h_des){ 
+						F=5; x_des = x_des + 1.2;
+					}
+					else { 
+						F=4; x_des = x; 
+					}
+				break;
+
+				case 5:
+					std::cout<<"Prueba 5 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
 					c_vel(0.05,vyo,0,vaz);
 					fb_pub.publish(emma_cmd);
 					if( x > x_des){ 
-						F=4; }
+						c_vel(0,0,0,0);
+						fb_pub.publish(emma_cmd);
+						ros::Duration(1).sleep();
+						F=6; 
+					}
 					else { 
-					F=3; 
-					}		
+						F=5; 
+					}
 				break;
+
+				case 6:
+					std::cout<<"Prueba 5 "<<"B = "<<(int)battery<<" % "<<" Aterrizando F = " << F << "X_Des = "<< x_des << endl;
+					std::cout<<"Land "<<"B "<<(int)battery<<" % \n";
+					land_pub_.publish(land_cmd);
+					F=0;
+				break;
+
+				case 0:
+					std::cout<<"Take Off "<<"B "<<(int)battery<<" % \n";
+					takeoff_pub_.publish(takeoff_cmd);
+					ros::Duration(3).sleep();
+					F=1;
+			
+				break;
+				
+				default:	
+					std::cout<<"Hover "<<"B "<<(int)battery<<" % \n";
+					c_vel(0.0,0.0,0.0,0.0);
+					fb_pub.publish(emma_cmd);
+				break;
+
 			}
+				
+
 		break;
 		case 50:
 			std::cout<<"Take Off "<<"B "<<(int)battery<<" % \n";

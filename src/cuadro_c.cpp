@@ -1,11 +1,11 @@
 //http://docs.opencv.org/3.1.0
 /*
- 	23 de Febrero 20:42
-	El programa funciona correctamente y se agregó la región de ínteres
+	28 Febrero 2018 22:23
+	Se agregó Filtro Median Blur
 */
 #include <ros/ros.h>
 #include <iostream>
-#include <sstream> 
+#include <sstream>
 #include <string>
 #include <math.h>
 #include <image_transport/image_transport.h>
@@ -16,57 +16,61 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/video.hpp>
 #include <opencv2/video/tracking.hpp>
-#include <geometry_msgs/Twist.h>
 
-using namespace cv;
 using namespace std;
-	
+using namespace cv;
+
 class Edge_Detector
 {
    	ros::NodeHandle nh1_;
   	image_transport::ImageTransport it1_;
   	image_transport::Subscriber image_sub_;
   	image_transport::Publisher image_pub_;
-	geometry_msgs::Twist base_cmd;
   	
 	ros::Publisher mx_pub;
   	ros::Publisher my_pub;
-	ros::Publisher camera_pos_pub;
+  	ros::Publisher rad_pub;
+  	ros::Publisher det_pub;
 
-	int cx, cy;
-	
-	int threshold_value;
-	int max_value;
-	
+	int H_MIN, H_MAX, S_MIN, S_MAX, V_MIN, V_MAX, MAX;
+	int radius, cx, cy;
+	int M_Blur;
+	int B_MAX;
+
 	int Thresh_Close;
-	int Max_Thresh_C;
-	
+	int Max_Thresh_C;			
 	
 	std::string windowName = "Original Image";
-	std::string windowName1 = "GRAY Image";
+	std::string windowName1 = "HSV Image";
 
 	
 public:
 	//Constructor por defecto de la clase con lista de constructores
   	Edge_Detector() : it1_(nh1_){
 
-    		image_sub_ = it1_.subscribe("/bebop/image_raw", 1, &Edge_Detector::imageCb, this);
-		//image_sub_ = it1_.subscribe("/bebop/image_raw", 1, &Edge_Detector::imageCb, this);
+    		//image_sub_ = it1_.subscribe("/cv_camera/image_raw", 1, &Edge_Detector::imageCb, this);
+			image_sub_ = it1_.subscribe("/bebop/image_raw", 1, &Edge_Detector::imageCb, this);
 
     		mx_pub = nh1_.advertise<std_msgs::Int32>("/MX",1);
     		my_pub = nh1_.advertise<std_msgs::Int32>("/MY",1);
-		camera_pos_pub = nh1_.advertise<geometry_msgs::Twist>("/bebop/camera_control", 1); 			
-				
+    		rad_pub = nh1_.advertise<std_msgs::Int32>("/Radio",1);    
+	
+   		H_MIN = 53;
+ 		H_MAX = 147;
+		S_MIN = 0;
+		S_MAX = 255;
+		V_MIN = 160;
+		V_MAX = 255;
+
+		MAX=255;
+
+		radius=0; 
 		cx=0; 
 		cy=0; 
-		
-		threshold_value = 0; 		
-		
+		M_Blur=0;
+		B_MAX=20;
 		Thresh_Close = 0;
-		Max_Thresh_C = 20;
-
-		max_value = 255;
-		
+		Max_Thresh_C = 20;  
   	}
 
 	//Desctructor de la clase
@@ -94,70 +98,67 @@ public:
 
 		cv::namedWindow(windowName1, CV_WINDOW_AUTOSIZE);
 		      
-		cv::createTrackbar("Threshold", windowName1, &threshold_value, max_value);
+		cv::createTrackbar("H_MIN", windowName1, &H_MIN, MAX);
+		cv::createTrackbar("H_MAX", windowName1, &H_MAX, MAX);
+		cv::createTrackbar("S_MIN", windowName1, &S_MIN, MAX);
+		cv::createTrackbar("S_MAX", windowName1, &S_MAX, MAX);
+		cv::createTrackbar("V_MIN", windowName1, &V_MIN, MAX);
+		cv::createTrackbar("V_MAX", windowName1, &V_MAX, MAX);
+		cv::createTrackbar("MedianB", windowName1, &M_Blur,B_MAX);
 		cv::createTrackbar("Thresh_Close", windowName1, &Thresh_Close, Max_Thresh_C);
 	}
 
   	void detect_edges(cv::Mat img){
 	
-		cv::Mat src, src_gray;
+		cv::Mat src,HSV;
 		cv::Mat threshold;
 		cv::Mat threshold1;
-		cv::Mat canny; 
+		cv::Mat combine_image; 
 		cv::Mat image_exit;
 
 		vector<vector<Point> > contours;
   		vector<Vec4i> hierarchy;
 		
 		vector<Vec4i> lines;
-			
-		base_cmd.angular.y = -45.0;
-  		base_cmd.angular.z = 0.0;		
-		camera_pos_pub.publish(base_cmd);
 		
-		//Rect Rec(cx_ROI, 0, ROI_W, 480);
-		Rect Rec(240, 0, 160, 368);
-
 		int d = 0;
 		double area = 0, area_max = 0;
 		
 		char str[200];
-
+	
 		img.copyTo(src);
 		createTrackbars();
-		
-		
-		rectangle(src, Rec, cv::Scalar(0, 255, 0), 1, 8, 1);		  
-		Mat Roi = src(Rec);		
-		
-		cv::cvtColor(Roi, src_gray, CV_BGR2GRAY);		
-	
-		cv::threshold( src_gray, image_exit, threshold_value, 255, 1 );
 
-		cv::Mat Element = getStructuringElement(cv::MORPH_RECT,  Size( 2*Thresh_Close + 1, 2*Thresh_Close+1 ), Point( Thresh_Close, Thresh_Close ));
-		cv::morphologyEx(image_exit, image_exit, cv::MORPH_CLOSE, Element);
+		cv::cvtColor(src, HSV, CV_RGB2HSV_FULL);
+		cv::inRange(HSV, cv::Scalar(H_MIN, S_MIN, V_MIN), cv::Scalar(H_MAX, S_MAX, V_MAX), threshold);
+		cv::medianBlur(threshold,threshold,2*M_Blur + 1);
+				
+		cv::Mat Element = getStructuringElement(cv::MORPH_ELLIPSE,  Size( 2*Thresh_Close + 1, 2*Thresh_Close+1 ), Point( Thresh_Close, Thresh_Close ));
+		cv::morphologyEx(threshold, combine_image, cv::MORPH_CLOSE, Element);
 		
-   		findContours( image_exit, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
-		
-		if(contours.size() == 0){
-			sprintf(str,"NO HAY CONTORNOS");
-			putText(src, str, Point2f(0,50), FONT_HERSHEY_PLAIN, 2,  Scalar(0,255,0), 3);
-		
-			cv::imshow(windowName1,image_exit );
-			//cv::imshow(windowName, Roi);
-			cv::imshow("O", src);
+		findContours( combine_image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
+
+		if (contours.size() == 0 ){
+			
+			sprintf(str, "No hay contornos");
+			putText(src, str, Point2f(0,50), FONT_HERSHEY_PLAIN, 2,  Scalar(0,0,255), 3);
+			cv::imshow(windowName1, combine_image);
+			cv::imshow(windowName, src);
 			cv::waitKey(3);
 			
 		}else{
-			
+
+		
 			for( int i = 0; i< contours.size(); i++ ){
 				area = contourArea(contours[i]);
 				if (area > area_max){
 					area_max = area;
+					radius=(int) ceil(sqrt(area_max/3.1416));
 					d = i;
 				}
 			
-			}		
+			}
+		
 			// Momentos
 			vector<Moments> mu(contours.size() );
  			mu[d] = moments( contours[d], false ); 
@@ -169,28 +170,30 @@ public:
 			cx = mu[d].m10/mu[d].m00;	
 			cy = mu[d].m01/mu[d].m00;
 		
-			drawContours( Roi, contours, d, cv::Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point() );
-       			circle( Roi, mc[d], 7, cv::Scalar(0, 255, 0),-1);
+			//Dibuja contornos y centro de Masa
+			//drawContours( src, contours, d, cv::Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point() );
+			circle( src, mc[d], 7, cv::Scalar(0, 255, 0),-1);
+       			circle( src, mc[d], radius, cv::Scalar(255,0, 0),6);
+
+			sprintf(str,"CX = %d CY = %d Radio = %d",cx,cy,radius);
+			putText(src, str, Point2f(0,50), FONT_HERSHEY_PLAIN, 2,  Scalar(0,0,255), 3);
 		
-			sprintf(str,"CX = %d CY = %d ",cx, cy);
-			putText(src, str, Point2f(0,50), FONT_HERSHEY_PLAIN, 2,  Scalar(0,255,0), 3);
-		
-			cv::imshow(windowName1,image_exit );
-			//cv::imshow(windowName, Roi);
-			cv::imshow("O", Roi);
 			
+			cv::imshow(windowName1, combine_image);
+			cv::imshow(windowName, src);
+
 			std_msgs::Int32 msgx; //Momento en X
 			msgx.data = cx;
 			std_msgs::Int32 msgy; //Momento en Y
 			msgy.data = cy;
-			
+			std_msgs::Int32 msgrad; //Radio Circulo
+			msgrad.data = radius;//circle detected
+		
 			mx_pub.publish(msgx);
 			my_pub.publish(msgy);
+			rad_pub.publish(msgrad);
 			cv::waitKey(3);
-			
 		}
-		
-		
 			
   }	
  

@@ -16,7 +16,7 @@
 
 using namespace std;
 //Variables
-int intOp;
+int intOp,t;
 uint8_t battery;
 int vx,my;
 int F=1;
@@ -86,51 +86,58 @@ int main(int argc, char** argv)
   while(ros::ok()){
 	switch(intOp){
 		case 49: //Tecla 1
-			switch(F){
-				case 1:
-					if(my < 300){
-						std::cout<<"Prueba 2 "<<"B = "<<" % "<<"Avanzando F = "<< F << " " << vy << endl;
-						c_vel(0.04,vy,0,vaz);
+			if(t==0){
+				std::cout<<"Inicio prueba 2 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
+				takeoff_pub_.publish(takeoff_cmd);
+				ros::Duration(3).sleep();
+				t++;
+			}
+			else{
+				switch(F){
+					case 1:
+						if(my < 300){
+							std::cout<<"Prueba 2 "<<"B = "<<" % "<<"Avanzando F = "<< F << " " << vy << endl;
+							c_vel(0.04,vy,0,vaz);
+							fb_pub.publish(emma_cmd);
+							F=1;
+						}else{
+							std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<"Hover F = "<< F << endl;
+							c_vel(0,0,0,0);
+							fb_pub.publish(emma_cmd);
+							F=2;
+						}
+					break;
+			
+					case 2:
+						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Subiendo :) F = " << F << endl;
+						c_vel(0,vyo,0.2,0);
 						fb_pub.publish(emma_cmd);
-						F=1;
-					}else{
-						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<"Hover F = "<< F << endl;
+						if(h > 1.50){ F=3; x_des = x_des + 0.75;}					
+						else { F=2; x_des = x; }
+					break;
+			
+					case 3:
+						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
+						c_vel(0.05,vyo,0,vaz);
+						fb_pub.publish(emma_cmd);
+						if( x > x_des){ F=4; }
+						else { F=3; }		
+					break;
+			
+					case 4:
+						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Aterrizando F = " << F << endl;
 						c_vel(0,0,0,0);
 						fb_pub.publish(emma_cmd);
-						F=2;
-					}
-				break;
-		
-				case 2:
-					std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Subiendo :) F = " << F << endl;
-					c_vel(0,vyo,0.2,0);
-					fb_pub.publish(emma_cmd);
-					if(h > 1.50){ F=3; x_des = x_des + 0.75;}					
-					else { F=2; x_des = x; }
-				break;
-		
-				case 3:
-					std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
-					c_vel(0.05,vyo,0,vaz);
-					fb_pub.publish(emma_cmd);
-					if( x > x_des){ F=4; }
-					else { F=3; }		
-				break;
-		
-				case 4:
-					std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Aterrizando F = " << F << endl;
-					c_vel(0,0,0,0);
-					fb_pub.publish(emma_cmd);
-					ros::Duration(1).sleep();
-					land_pub_.publish(land_cmd);
-					F=1;
-				break;
-				default:
-					std::cout<<"Hover "<<"B "<<(int)battery<<" % \n";
-					c_vel(0.0,0.0,0.0,0.0);
-					fb_pub.publish(emma_cmd);
-				break;
-				
+						ros::Duration(1).sleep();
+						land_pub_.publish(land_cmd);
+						F=1;
+					break;
+					default:
+						std::cout<<"Hover "<<"B "<<(int)battery<<" % \n";
+						c_vel(0.0,0.0,0.0,0.0);
+						fb_pub.publish(emma_cmd);
+					break;
+				}
 			}
 		break;
 		case 50:// Tecla 2
