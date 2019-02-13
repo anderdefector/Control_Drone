@@ -6,7 +6,7 @@ from std_msgs.msg import Int32
 from std_msgs.msg import Float32
 from nav_msgs.msg import Odometry
 
-y_d = 320 #valor del centro de la imagen en x en px
+y_d = 80 #valor del centro de la imagen en x en px
 Kp = 0.001
 Kd = 0.0003
 global y0

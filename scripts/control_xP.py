@@ -6,7 +6,7 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Float32
 from std_msgs.msg import Int32
 
-x_d = 70
+x_d = 130 #70
 Kp = 0.004
 Kd = 0.0008
 global x0
