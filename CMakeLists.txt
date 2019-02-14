@@ -49,6 +49,12 @@ target_link_libraries(C_PT ${catkin_LIBRARIES})
 add_executable(C_P5 src/c_p5.cpp)
 target_link_libraries(C_P5 ${catkin_LIBRARIES})
 
+add_executable(C_P6 src/c_p6.cpp)
+target_link_libraries(C_P6 ${catkin_LIBRARIES})
+
+add_executable(vi_wp src/vi_waypoints.cpp)
+target_link_libraries(vi_wp ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
 add_executable(C_VY src/c_vy.cpp)
 target_link_libraries(C_VY ${catkin_LIBRARIES})
 
