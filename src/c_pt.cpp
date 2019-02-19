@@ -74,33 +74,42 @@ int main(int argc, char** argv)
 
   while(ros::ok()){
 	switch(intOp){
-		case 49:
-			if(t==0){
-				std::cout<<"Inicio prueba 1 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
-				takeoff_pub_.publish(takeoff_cmd);
-				ros::Duration(6).sleep();
-				t++;
-			}
-			else{	
-				std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
-				c_vel(vx,vy,vz,0.0);
-				fb_pub.publish(emma_cmd);
-			}
+		case 49: 
+			//Tecla 1
+			// if(t==0){
+			// 	std::cout<<"Inicio prueba 1 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
+			// 	takeoff_pub_.publish(takeoff_cmd);
+			// 	ros::Duration(6).sleep();
+			// 	t++;
+			// }
+			// else{	
+			// 	std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
+			// 	c_vel(vx,vy,vz,0.0);
+			// 	fb_pub.publish(emma_cmd);
+			// }
+
+			std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
+			c_vel(0.0,vy,vz,0.0);
+			fb_pub.publish(emma_cmd);
 		break;
 		case 50:
+			//Tecla 2
 			std::cout<<"Take Off "<<"B "<<(int)battery<<" % \n";
 			takeoff_pub_.publish(takeoff_cmd);
 		break;
 		case 51:
+			//Tecla 3
 			std::cout<<"Land "<<"B "<<(int)battery<<" % \n";
 			land_pub_.publish(land_cmd);
 		break;
 		case 52:
+			//Tecla 4
 			std::cout<<"Hover "<<"B "<<(int)battery<<" % \n";
 			c_vel(0.0,0.0,0.0,0.0);
 			fb_pub.publish(emma_cmd);
 		break;
 		default:	
+			//Cualquier tecla 
 			std::cout<<"Hover "<<"B "<<(int)battery<<" % \n";
 			c_vel(0.0,0.0,0.0,0.0);
 			fb_pub.publish(emma_cmd);
