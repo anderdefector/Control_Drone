@@ -28,10 +28,10 @@
 
     <!--node pkg="control_drone" name="C_VY" type="C_VY" /-->
 
-	<node pkg="control_drone" name="control_y" type="control_yP.py"/>
+	<node pkg="control_drone" name="control_y" type="control_yT.py" launch-prefix="xterm -e"/>
 	
-	<node pkg="control_drone" name="control_x" type="control_xP.py" launch-prefix="xterm -e" />
+	<node pkg="control_drone" name="control_x" type="control_xT.py" launch-prefix="xterm -e" />
 	
-	<node pkg="control_drone" name="control_z" type="control_zP.py"/>
+	<node pkg="control_drone" name="control_z" type="control_zT.py" launch-prefix="xterm -e"/>
 	
 </launch>

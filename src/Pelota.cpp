@@ -48,19 +48,19 @@ public:
 	//Constructor por defecto de la clase con lista de constructores
   	Edge_Detector() : it1_(nh1_){
 
-    		image_sub_ = it1_.subscribe("/cv_camera/image_raw", 1, &Edge_Detector::imageCb, this);
-			//image_sub_ = it1_.subscribe("/bebop/image_raw", 1, &Edge_Detector::imageCb, this);
+    		//image_sub_ = it1_.subscribe("/cv_camera/image_raw", 1, &Edge_Detector::imageCb, this);
+			image_sub_ = it1_.subscribe("/bebop/image_raw", 1, &Edge_Detector::imageCb, this);
 
     		mx_pub = nh1_.advertise<std_msgs::Int32>("/MX",1);
     		my_pub = nh1_.advertise<std_msgs::Int32>("/MY",1);
     		rad_pub = nh1_.advertise<std_msgs::Int32>("/Radio",1);    
 	
-   		H_MIN = 103;
- 		H_MAX = 134;
-		S_MIN = 97;
-		S_MAX = 206;
-		V_MIN = 38;
-		V_MAX = 255;
+   		H_MIN = 173;
+ 		H_MAX = 192;
+		S_MIN = 119;
+		S_MAX = 214;
+		V_MIN = 75;
+		V_MAX = 213;
 
 		MAX=255;
 
