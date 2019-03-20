@@ -61,6 +61,9 @@ target_link_libraries(vi_wp ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_executable(C_VY src/c_vy.cpp)
 target_link_libraries(C_VY ${catkin_LIBRARIES})
 
+add_executable(X_OBS src/c_vxcall.cpp)
+target_link_libraries(X_OBS ${catkin_LIBRARIES})
+
 add_executable(C_VAZ src/c_vaz.cpp)
 target_link_libraries(C_VAZ ${catkin_LIBRARIES})
 

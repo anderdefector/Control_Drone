@@ -4,7 +4,6 @@
 #include <termios.h>
 #include <sensor_msgs/image_encodings.h>
 #include <nav_msgs/Odometry.h>
-#include <bebop_msgs/Ardrone3PilotingStateAltitudeChanged.h>
 #include <bebop_msgs/CommonCommonStateBatteryStateChanged.h>
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
@@ -20,15 +19,12 @@ int intOp,t;
 uint8_t battery;
 int vx,my;
 int F=1;
-float h,r,y,y_d,x,x_des,vy,vyo,vaz;
+float r,y,y_d,x,x_des,vy,vyo,vaz;
 geometry_msgs::Twist emma_cmd;
 
 //Funciones
 void c_vel (float lin_x, float lin_y, float lin_z, float ang_z);
 //Funciones Callback
-void altitude_callback(const bebop_msgs::Ardrone3PilotingStateAltitudeChanged::ConstPtr& msg2){
-	h=msg2->altitude;
-}
 
 void opt_callback(const std_msgs::Int32::ConstPtr& msg1){
 	intOp=msg1->data;
@@ -60,7 +56,7 @@ void battery_callback(const bebop_msgs::CommonCommonStateBatteryStateChanged::Co
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr& msg){
 	x=msg->pose.pose.position.x;
-    y=msg->pose.pose.position.y;
+  y=msg->pose.pose.position.y;
 }
 
 
@@ -71,10 +67,10 @@ int main(int argc, char** argv)
   ros::Publisher takeoff_pub_ = nodo_.advertise<std_msgs::Empty>("/bebop/takeoff", 1);
   ros::Publisher land_pub_ = nodo_.advertise<std_msgs::Empty>("/bebop/land", 1);
   ros::Publisher fb_pub = nodo_.advertise<geometry_msgs::Twist>("/bebop/cmd_vel",1);
+	ros::Publisher xref_pub = nodo_.advertise<std_msgs::Float32>("/x_ref",1);
   //teclado	
   ros::Subscriber tec_sub = nodo_.subscribe("/copt",10,opt_callback);
   ros::Subscriber battery_ = nodo_.subscribe("/bebop/states/common/CommonState/BatteryStateChanged",1,battery_callback);
-  ros::Subscriber Alt = nodo_.subscribe("/bebop/states/ardrone3/PilotingState/AltitudeChanged",1,altitude_callback);
   ros::Subscriber odom = nodo_.subscribe("/bebop/odom",1,odom_callback);
   //Nodos de velocidad
   ros::Subscriber Mx_sub = nodo_.subscribe("/MY",1,My_callback);
@@ -94,15 +90,15 @@ int main(int argc, char** argv)
 			if(t==0){
 				std::cout<<"Inicio prueba 2 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
 				takeoff_pub_.publish(takeoff_cmd);
-				ros::Duration(5).sleep();
+				ros::Duration(15).sleep();
 				t++;
 			}
 			else{
 				switch(F){
 					case 1:
-						if(r < 70){
+						if(r < 120){
 							std::cout<<"Prueba 2 "<<"B = "<<" % "<<"Avanzando F = "<< F << " " << vy << endl;
-							c_vel(0.05,vy,0,vaz);
+							c_vel(0.04,vy,0,vaz);
 							fb_pub.publish(emma_cmd);
 							F=1;
 						}else{
@@ -115,15 +111,15 @@ int main(int argc, char** argv)
 			
 					case 2:
 						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Derecha :) F = " << F << " Radio "<< r<< endl;
-						c_vel(0,vyo,0,0);
+						c_vel(0,vyo,0,vaz);
 						fb_pub.publish(emma_cmd);
-						if(y < 1.50){ F=3; x_des = x_des + 0.75;}					
+						if(y < 0.50){ F=3; x_des = x_des + 0.50;}					
 						else { F=2; x_des = x; }
 					break;
 			
 					case 3:
 						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Pasando F = " << F << "X_Des = "<< x_des << endl;
-						c_vel(0.05,vyo,0,vaz);
+						c_vel(0.04,vyo,0,vaz);
 						fb_pub.publish(emma_cmd);
 						if( x > x_des){ F=4; }
 						else { F=3; }		
