@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Derecha :) F = " << F << " Radio "<< r<< endl;
 						c_vel(0,vyo,0,0);
 						fb_pub.publish(emma_cmd);
-						if(y < -1.50){ F=3; x_des = x_des + 0.75;}					
+						if(y < 1.50){ F=3; x_des = x_des + 0.75;}					
 						else { F=2; x_des = x; }
 					break;
 			
