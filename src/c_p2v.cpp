@@ -20,7 +20,7 @@ int intOp,t;
 uint8_t battery;
 int vx,my;
 int F=1;
-float h,x,x_des,y,y_d,vy,vyo,vaz;
+float h,r,y,y_d,x,x_des,vy,vyo,vaz;
 geometry_msgs::Twist emma_cmd;
 
 //Funciones
@@ -36,6 +36,10 @@ void opt_callback(const std_msgs::Int32::ConstPtr& msg1){
 
 void My_callback(const std_msgs::Int32::ConstPtr& msg2){
 	my=msg2->data;
+}
+
+void radio_callback(const std_msgs::Int32::ConstPtr& msg2){
+	r=msg2->data;
 }
 
 void vy_callback(const std_msgs::Float32::ConstPtr& msg){
@@ -56,7 +60,7 @@ void battery_callback(const bebop_msgs::CommonCommonStateBatteryStateChanged::Co
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr& msg){
 	x=msg->pose.pose.position.x;
-	y=msg->pose.pose.position.y;
+    y=msg->pose.pose.position.y;
 }
 
 
@@ -74,10 +78,10 @@ int main(int argc, char** argv)
   ros::Subscriber odom = nodo_.subscribe("/bebop/odom",1,odom_callback);
   //Nodos de velocidad
   ros::Subscriber Mx_sub = nodo_.subscribe("/MY",1,My_callback);
+  ros::Subscriber Radio_sub = nodo_.subscribe("/Radio",1,radio_callback);
   ros::Subscriber vy_sub = nodo_.subscribe("/controlY",10,vy_callback); 
   ros::Subscriber vyo_sub = nodo_.subscribe("/vely",10,vyo_callback);
   ros::Subscriber vaz_sub = nodo_.subscribe("/velaz",10,vaz_callback); 
-  //ros::Subscriber My_sub = nodo_.subscribe("/MY",1,My_callback);								
   	
   std_msgs::Empty takeoff_cmd;
   std_msgs::Empty land_cmd;	
@@ -90,15 +94,15 @@ int main(int argc, char** argv)
 			if(t==0){
 				std::cout<<"Inicio prueba 2 "<<"B = "<<(int)battery<<" % "<<"Take off"<< endl;
 				takeoff_pub_.publish(takeoff_cmd);
-				ros::Duration(3).sleep();
+				ros::Duration(5).sleep();
 				t++;
 			}
 			else{
 				switch(F){
 					case 1:
-						if(my < 300){
+						if(r < 70){
 							std::cout<<"Prueba 2 "<<"B = "<<" % "<<"Avanzando F = "<< F << " " << vy << endl;
-							c_vel(0.04,vy,0,vaz);
+							c_vel(0.05,vy,0,vaz);
 							fb_pub.publish(emma_cmd);
 							F=1;
 						}else{
@@ -110,10 +114,10 @@ int main(int argc, char** argv)
 					break;
 			
 					case 2:
-						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Derecha :) F = " << F << endl;
-						c_vel(0,vyo,0.0,0);
+						std::cout<<"Prueba 2 "<<"B = "<<(int)battery<<" % "<<" Derecha :) F = " << F << " Radio "<< r<< endl;
+						c_vel(0,vyo,0,0);
 						fb_pub.publish(emma_cmd);
-						if(y > 1.50){ F=3; x_des = x_des + 0.75;}					
+						if(y < -1.50){ F=3; x_des = x_des + 0.75;}					
 						else { F=2; x_des = x; }
 					break;
 			

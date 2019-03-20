@@ -13,25 +13,20 @@
         </node>
         <include file="$(find bebop_description)/launch/description.launch" />
     </group>
-
+	
 	<node pkg="control_drone" name="Keyboard" type="Keyboard" launch-prefix="xterm -e" >
 		<param name="autosize" value="true"/>	
 	</node>
 
-	<node pkg="control_drone" name="C_PT" type="C_PT" launch-prefix="xterm -e" >
+	<node pkg="control_drone" name="C_P2v" type="C_P2v" launch-prefix="xterm -e" >
 		<param name="autosize" value="true"/>
 	</node>
+
+    <node pkg="control_drone" name="C_VY" type="C_VY" />
+
+    <node pkg="control_drone" name="C_VAZ" type="C_VAZ" />
 	
 	<node pkg="control_drone" name="Pelota" type="Pelota"/>
-
-    <node pkg="control_drone" name="control_AZ" type="control_azP.py"/>
-
-    <!--node pkg="control_drone" name="C_VY" type="C_VY" /-->
-
-	<node pkg="control_drone" name="control_y" type="control_yP.py" launch-prefix="xterm -e"/>
 	
-	<node pkg="control_drone" name="control_x" type="control_xP.py" launch-prefix="xterm -e" />
-	
-	<node pkg="control_drone" name="control_z" type="control_zP.py" launch-prefix="xterm -e"/>
-	
+	<node pkg="control_drone" name="control_y" type="control_yP.py" launch-prefix="xterm -e" />
 </launch>

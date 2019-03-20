@@ -11,7 +11,7 @@
 //Bebop m=0.450
 //Bebop2 m=0.500
 float  m = 0.45, g = 9.81;
-float y, dy, wy, yd = 0.0, yg = 0.0, dyg = 0.0, wyg = 0.0, y00=0.0, dy0 = 0.0, wy0 = 0.0, yg0 = 0.0, dyg0 = 0.0, wyg0 = 0.0, uy=0.0, vy=0.0;
+float y, dy, wy, yd = 1.5, yg = 0.0, dyg = 0.0, wyg = 0.0, y00=0.0, dy0 = 0.0, wy0 = 0.0, yg0 = 0.0, dyg0 = 0.0, wyg0 = 0.0, uy=0.0, vy=0.0;
 
 using namespace std;
 //Funciones

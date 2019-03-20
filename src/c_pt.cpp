@@ -85,11 +85,11 @@ int main(int argc, char** argv)
 			// else{	
 			// 	std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
 			// 	c_vel(vx,vy,vz,0.0);
-			// 	fb_pub.publish(emma_cmd);
+			// 	fb_pub.publish(emma_cmd)0.05:;
 			// }
 
 			std::cout<<"Prueba Pelota "<<"B = "<<(int)battery<<" % "<< "Velocidad "<< vy << endl;
-			c_vel(0.0,vy,vz,0.0);
+			c_vel(vx,vy,vz,0.0);
 			fb_pub.publish(emma_cmd);
 		break;
 		case 50:

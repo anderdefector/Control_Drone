@@ -43,6 +43,9 @@ target_link_libraries(Cuadro_Color ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_executable(C_P2 src/c_p2.cpp)
 target_link_libraries(C_P2 ${catkin_LIBRARIES})
 
+add_executable(C_P2v src/c_p2v.cpp)
+target_link_libraries(C_P2v ${catkin_LIBRARIES})
+
 add_executable(C_PT src/c_pt.cpp)
 target_link_libraries(C_PT ${catkin_LIBRARIES})
 

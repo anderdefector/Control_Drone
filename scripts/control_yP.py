@@ -6,7 +6,7 @@ from std_msgs.msg import Int32
 from std_msgs.msg import Float32
 from nav_msgs.msg import Odometry
 
-y_d = 80 #valor del centro de la imagen en x en px para waypoints 100
+y_d = 440 #valor del centro de la imagen en x en px para waypoints 100  lapgop320 bebop 440
 Kp = 0.001
 Kd = 0.0003
 global y0
@@ -20,10 +20,10 @@ def callback(data):
 	u = Kp*e + Kd*de
 	if abs(e) < 10:
 		u=0.0	
-	if u > 0.05:
-		u = 0.05
-	elif u < -0.05:
-		u = -0.05
+	if u > 0.1:
+		u = 0.1
+	elif u < -0.1:
+		u = -0.1
 	else:
 		u = u
 	e0 = e

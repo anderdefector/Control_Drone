@@ -4,7 +4,7 @@ import numpy as np
 from std_msgs.msg import Int32
 from std_msgs.msg import Float32
 
-z_d = 164 #valor del centro de la imagen en y en px
+z_d = 240 #valor del centro de la imagen en y en px
 Kp = 0.004
 Kd = 0.0008
 global z0
