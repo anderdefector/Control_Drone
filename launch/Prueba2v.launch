@@ -28,5 +28,5 @@
 	
 	<node pkg="control_drone" name="Pelota" type="Pelota"/>
 	
-	<node pkg="control_drone" name="control_y" type="control_yP.py" launch-prefix="xterm -e" />
+	<node pkg="control_drone" name="control_y" type="control_yP.py" />
 </launch>

@@ -6,7 +6,7 @@ from std_msgs.msg import Int32
 from std_msgs.msg import Float32
 from nav_msgs.msg import Odometry
 
-y_d = 440 #valor del centro de la imagen en x en px para waypoints 100  lapgop320 bebop 440
+y_d = 428 #valor del centro de la imagen en x en px para waypoints 100  lapgop320 bebop 440
 Kp = 0.001
 Kd = 0.0003
 global y0
